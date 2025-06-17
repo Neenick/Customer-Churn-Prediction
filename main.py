@@ -7,7 +7,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 data_path = os.path.join(BASE_DIR, 'data', 'WA_Fn-UseC_-Telco-Customer-Churn.csv')
 
-X_train, X_test, y_train, y_test = load_data(data_path, 0.2)
+X_train, X_test, y_train, y_test = load_data(data_path, split=0.2)
 
 model = BaseModel()
 model.train(X_train, y_train)
