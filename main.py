@@ -1,4 +1,5 @@
 from src.models.logistic_regression import BaseModel
+from src.models.random_forest import RandomForest
 from data.dataset_loader import load_data
 
 import os
@@ -9,6 +10,6 @@ data_path = os.path.join(BASE_DIR, 'data', 'WA_Fn-UseC_-Telco-Customer-Churn.csv
 
 X_train, X_test, y_train, y_test = load_data(data_path, split=0.2)
 
-model = BaseModel()
+model = RandomForest()
 model.train(X_train, y_train)
 model.evaluate(X_test, y_test)
