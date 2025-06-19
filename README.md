@@ -14,12 +14,12 @@ The dataset used is [Telco Customer Churn Dataset](https://www.kaggle.com/blastc
 
 ```bash
 ├───app
-│   ├───app.py
+│   └───app.py
 ├───data
 │   ├───dataset_loader.py
 │   └───WA_Fn-UseC_-Telco-Customer-Churn.csv
 ├───src
-│   ├───models
+│   └───models
 │       ├───logistic_regression.py
 │       └───random_forest.py
 ├───main.py
@@ -54,16 +54,21 @@ Two models were implemented and compared:
 
 ## Results
 
-| Model               | Accuracy | ROC AUC Score | Notes                                    |
+| Model               | F1 Score | ROC AUC Score | Notes                                    |
 |---------------------|----------|---------------|------------------------------------------|
-| Logistic Regression  | 80.7%    | 0.86          | Best overall, interpretable, simple      |
-| Random Forest       | 79.5%    | 0.84          | Slightly lower, may overfit on small data |
+| Logistic Regression  | 0.59    | 0.836          | Best overall, interpretable, simple      |
+| Tuned Log Regression | 0.59     | 0.837         |                                          |
+| Random Forest       | 0.55    | 0.828          | Slightly lower, may overfit on small data |
+| Tuned Random Forest | 0.56     | 0.839         |                                           |
+| XGBoost             | 0.57     | 0.822         |                                           |
 
 ---
 
 ## Insights
 
 Despite Random Forest being more complex, Logistic Regression performed better. This indicates that the relationship between the features and churn is mostly linear. Logistic Regression also offers better interpretability, which is valuable for business decisions and explaining results to stakeholders.
+
+The features `Total Charges`, `Tenure` and `Monthly Charges` contribute for about 20%, 18% and 17% respectively  to the model's decisions. Even though these features are related, `Total Charges` still provides unique information that improves the model’s performance.
 
 ---
 
