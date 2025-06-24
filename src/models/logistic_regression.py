@@ -2,11 +2,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
 from sklearn.model_selection import GridSearchCV
 import joblib
+import numpy as np
+import pandas as pd
 
 
 class LogisticRegressionModel:
     def __init__(self):
-        self.model = LogisticRegression(random_state=0, max_iter=10000)
+        self.model = LogisticRegression(class_weight='balanced', random_state=0, max_iter=10000)
 
     def train(self, X_train, y_train):
         self.model.fit(X_train, y_train)
@@ -31,12 +33,23 @@ class LogisticRegressionModel:
             'solver': ['liblinear', 'saga'],
             'penalty': ['l2']
         }
-        grid = GridSearchCV(LogisticRegression(max_iter=10000), param_grid, cv=5)
+        grid = GridSearchCV(LogisticRegression(class_weight='balanced', max_iter=10000), param_grid, cv=5)
         grid.fit(X_train, y_train)
         print("Best parameters:", grid.best_params_)
         print("Best score:", grid.best_score_)
         self.model = grid.best_estimator_
         return self.model
+    
+    def explain(self, X_train):
+        coefs = self.model.coef_[0]  # Get the coefficients
+        feature_names = X_train.columns
+        coef_df = pd.DataFrame({
+            'Feature': feature_names,
+            'Coefficient': coefs
+        })
+        coef_df['Abs(Coefficient)'] = np.abs(coef_df['Coefficient'])
+        coef_df = coef_df.sort_values(by='Abs(Coefficient)', ascending=False)
+        print(coef_df.head(10))
 
     def save(self, filename):
         joblib.dump(self.model, filename)

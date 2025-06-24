@@ -23,11 +23,4 @@ def load_data(path, split=0.2):
     y = data['Churn']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=split, random_state=0)
-
-
-    # scaler = StandardScaler()
-    # X_train = scaler.fit_transform(X_train)
-    # X_test = scaler.transform(X_test)
-
-
     return X_train, X_test, y_train, y_test

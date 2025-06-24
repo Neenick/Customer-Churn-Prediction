@@ -1,10 +1,12 @@
 from xgboost import XGBClassifier
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
+from sklearn.model_selection import GridSearchCV
 import joblib
+import shap
 
 class XGBoostModel:
     def __init__(self):
-        self.model = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=0)
+        self.model = XGBClassifier(eval_metric='logloss', random_state=0)
 
     def train(self, X_train, y_train):
         self.model.fit(X_train, y_train)
@@ -12,6 +14,7 @@ class XGBoostModel:
     def evaluate(self, X_test, y_test):
         y_pred = self.model.predict(X_test)
         y_proba = self.model.predict_proba(X_test)[:, 1]
+        y_pred = (y_proba >= 0.35).astype(int) 
 
         print("Confusion Matrix:")
         print(confusion_matrix(y_test, y_pred))
@@ -25,6 +28,30 @@ class XGBoostModel:
 
         print("ROC AUC Score:")
         print(roc_auc_score(y_test, y_proba))
+
+    def grid_search(self, X_train, y_train):
+        param_grid = {
+            'n_estimators': [50, 100, 200],
+            'max_depth': [3, 5, 7],
+            'learning_rate': [0.01, 0.1, 0.2],
+            'subsample': [0.8, 1],
+            'colsample_bytree': [0.8, 1]
+        }
+
+        grid = GridSearchCV(XGBClassifier(eval_metric='auc', random_state=0), param_grid, cv=5)
+        grid.fit(X_train, y_train)
+
+        print("Best parameters:", grid.best_params_)
+        print("Best score:", grid.best_score_)
+
+        self.model = grid.best_estimator_
+        return self.model
+    
+    def explain(self, X_train):
+        explainer = shap.Explainer(self.model)
+        shap_values = explainer(X_train)
+
+        shap.summary_plot(shap_values, X_train, max_display=10)
 
     def save(self, filename):
         joblib.dump(self.model, filename)

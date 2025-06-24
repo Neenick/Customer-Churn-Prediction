@@ -54,21 +54,40 @@ Two models were implemented and compared:
 
 ## Results
 
-| Model               | F1 Score | ROC AUC Score | Notes                                    |
-|---------------------|----------|---------------|------------------------------------------|
-| Logistic Regression  | 0.59    | 0.836          | Best overall, interpretable, simple      |
-| Tuned Log Regression | 0.59     | 0.837         |                                          |
-| Random Forest       | 0.55    | 0.828          | Slightly lower, may overfit on small data |
-| Tuned Random Forest | 0.56     | 0.839         |                                           |
-| XGBoost             | 0.57     | 0.822         |                                           |
+| Model               | F1 Score | ROC AUC Score | Notes                                     |
+|---------------------|----------|---------------|-------------------------------------------|
+| Logistic Regression | 0.63     | 0.837         | Best overall, interpretable, simple       |
+| Random Forest       | 0.62     | 0.840         | Slightly lower, may overfit on small data |
+| XGBoost             | 0.63     | 0.843         |                                           |
+
+---
+
+### Feature Importance
+
+The table below shows the top 10 features ranked by their combined importance across three different models: Logistic Regression, Random Forest, and XGBoost. Out of the 20 features, each model ranked its top 10 features from 10 (most important) down to 1 point. We summed these points from all three models to get an overall score for each feature.
+
+| Rank | Feature                | Points |
+|-------|-----------------------|--------|
+| 1     | Contract Two Year      | 25     |
+| 2     | Contract One Year      | 19     |
+| 3     | Tenure                | 19     |
+| 4     | Payment Elect Check    | 18     |
+| 5     | InternetService Optic  | 18     |
+| 6     | Total Charges          | 12     |
+| 7     | Monthly Charges        | 12     |
+| 8     | Online Security       | 9      |
+| 9     | Tech Support          | 9      |
+| 10    | MultipleLines No Phone | 8      |
+
+**Notes:**
+- This point system helps combine feature rankings from different models into a single overview.
+- Features with higher total points were consistently important across models.
 
 ---
 
 ## Insights
 
-Despite Random Forest being more complex, Logistic Regression performed better. This indicates that the relationship between the features and churn is mostly linear. Logistic Regression also offers better interpretability, which is valuable for business decisions and explaining results to stakeholders.
 
-The features `Total Charges`, `Tenure` and `Monthly Charges` contribute for about 20%, 18% and 17% respectively  to the model's decisions. Even though these features are related, `Total Charges` still provides unique information that improves the model’s performance.
 
 ---
 

@@ -13,6 +13,7 @@ class RandomForestModel:
     def evaluate(self, X_test, y_test):
         y_pred = self.model.predict(X_test)
         y_proba = self.model.predict_proba(X_test)[:, 1]
+        y_pred = (y_proba >= 0.35).astype(int) 
 
         print("Confusion Matrix:")
         print(confusion_matrix(y_test, y_pred))
@@ -40,7 +41,7 @@ class RandomForestModel:
         self.model = grid.best_estimator_
         return self.model
     
-    def feature_importance(self, feature_names):
+    def explain(self, feature_names):
         importances = self.model.feature_importances_
         for name, importance in sorted(zip(feature_names, importances), key=lambda x: x[1], reverse=True):
             print(f"{name}: {importance:.4f}")
