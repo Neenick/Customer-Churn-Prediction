@@ -2,6 +2,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, f1_score
 from sklearn.model_selection import GridSearchCV
 import joblib
+import pandas as pd
 
 class RandomForestModel:
     def __init__(self):
@@ -41,10 +42,16 @@ class RandomForestModel:
         self.model = grid.best_estimator_
         return self.model
     
-    def explain(self, feature_names):
+    def explain(self, feature_names, X_train):
         importances = self.model.feature_importances_
-        for name, importance in sorted(zip(feature_names, importances), key=lambda x: x[1], reverse=True):
-            print(f"{name}: {importance:.4f}")
+        print(importances)
+        df = pd.DataFrame({
+            'Feature': feature_names,
+            'Importance': importances
+        })
+        df = df.sort_values(by='Importance', ascending=False).head(10).reset_index(drop=True)
+        print(df)  # Optional: keep for debugging
+        return df
 
     def save(self, filename):
         joblib.dump(self.model, filename)

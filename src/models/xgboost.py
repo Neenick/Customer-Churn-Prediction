@@ -47,11 +47,11 @@ class XGBoostModel:
         self.model = grid.best_estimator_
         return self.model
     
-    def explain(self, X_train):
+    def explain(self, feature_names, X_train):
         explainer = shap.Explainer(self.model)
         shap_values = explainer(X_train)
-
         shap.summary_plot(shap_values, X_train, max_display=10)
+        return shap_values
 
     def save(self, filename):
         joblib.dump(self.model, filename)

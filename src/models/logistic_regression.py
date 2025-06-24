@@ -40,16 +40,15 @@ class LogisticRegressionModel:
         self.model = grid.best_estimator_
         return self.model
     
-    def explain(self, X_train):
+    def explain(self, feature_names, X_train):
         coefs = self.model.coef_[0]  # Get the coefficients
-        feature_names = X_train.columns
         coef_df = pd.DataFrame({
             'Feature': feature_names,
             'Coefficient': coefs
         })
         coef_df['Abs(Coefficient)'] = np.abs(coef_df['Coefficient'])
-        coef_df = coef_df.sort_values(by='Abs(Coefficient)', ascending=False)
-        print(coef_df.head(10))
+        coef_df = coef_df.sort_values(by='Abs(Coefficient)', ascending=False).head(10).reset_index(drop=True)
+        return coef_df
 
     def save(self, filename):
         joblib.dump(self.model, filename)

@@ -22,17 +22,15 @@ def run_model(model_class, model_name, X_train, y_train, X_test, y_test):
         model.train(X_train, y_train)
     
     model.evaluate(X_test, y_test)
-    model.explain(X_train)
+    print(model.explain(X_train))
 
 def main():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     data_path = os.path.join(BASE_DIR, 'data', 'WA_Fn-UseC_-Telco-Customer-Churn.csv')
     X_train, X_test, y_train, y_test = load_data(data_path, split=0.2)
-    print(X_test.dtypes)
-
-    run_model(LogisticRegressionModel, "logistic_regression", X_train, y_train, X_test, y_test)
-    run_model(RandomForestModel, "random_forest", X_train, y_train, X_test, y_test)
-    run_model(XGBoostModel, "xgboost", X_train, y_train, X_test, y_test)
+    #run_model(LogisticRegressionModel, "logistic_regression", X_train, y_train, X_test, y_test)
+    #run_model(RandomForestModel, "random_forest", X_train, y_train, X_test, y_test)
+    #run_model(XGBoostModel, "xgboost", X_train, y_train, X_test, y_test)
 
 if __name__ == "__main__":
     main()

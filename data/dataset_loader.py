@@ -17,6 +17,7 @@ def load_data(path, split=0.2):
 
     # Convert to numeric
     data = pd.get_dummies(data, drop_first=True)
+    print(data.columns.tolist())
 
     # Split input features & output feature
     X = data.drop('Churn', axis=1)
