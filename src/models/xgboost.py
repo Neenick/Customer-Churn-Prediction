@@ -3,33 +3,66 @@ from sklearn.metrics import classification_report, confusion_matrix, roc_auc_sco
 from sklearn.model_selection import GridSearchCV
 import joblib
 import shap
+import streamlit as st
+import pandas as pd
+from typing import List
 
 class XGBoostModel:
-    def __init__(self):
-        self.model = XGBClassifier(eval_metric='logloss', random_state=0)
+    """An XGBoost classifier model with training, evaluation, explanation, and persistence support."""
 
-    def train(self, X_train, y_train):
+    def __init__(self) -> None:
+        """Initializes the XGBoost model with default parameters."""
+        self.model: XGBClassifier = XGBClassifier(eval_metric='logloss', random_state=0)
+
+    def train(self, X_train: pd.DataFrame, y_train: pd.Series) -> None:
+        """Trains the XGBoost model.
+
+        Args:
+            X_train (pd.DataFrame): Training input features.
+            y_train (pd.Series): Target feature for the training set.
+        """
         self.model.fit(X_train, y_train)
 
-    def evaluate(self, X_test, y_test):
-        y_pred = self.model.predict(X_test)
+    def evaluate(self, X_test: pd.DataFrame, y_test: pd.Series) -> None:
+        """Evaluates the model and displays results in Streamlit.
+
+        Applies a custom probability threshold of 0.35 for classification.
+
+        Args:
+            X_test (pd.DataFrame): Test input features.
+            y_test (pd.Series): Target feature for the test set.
+        """
         y_proba = self.model.predict_proba(X_test)[:, 1]
-        y_pred = (y_proba >= 0.35).astype(int) 
+        y_pred = (y_proba >= 0.35).astype(int)
 
-        print("Confusion Matrix:")
-        print(confusion_matrix(y_test, y_pred))
+        cm = confusion_matrix(y_test, y_pred)
+        cr = classification_report(y_test, y_pred, output_dict=True)
+        f1 = f1_score(y_test, y_pred)
+        auc = roc_auc_score(y_test, y_proba)
 
-        print("\nClassification Report:")
-        print(classification_report(y_test, y_pred))
+        st.subheader("Confusion Matrix")
+        st.dataframe(pd.DataFrame(cm, columns=["Predicted 0", "Predicted 1"], index=["Actual 0", "Actual 1"]))
 
-        print(f"Test Accuracy: {self.model.score(X_test, y_test)}")
+        st.subheader("Classification Report")
+        st.dataframe(pd.DataFrame(cr).transpose())
 
-        print("F1 Score:", f1_score(y_test, y_pred))
+        st.subheader("Model Metrics")
+        metrics_df = pd.DataFrame({
+            "Metric": ["F1 Score", "ROC AUC"],
+            "Score": [f"{f1:.4f}", f"{auc:.4f}"]
+        })
+        st.table(metrics_df)
 
-        print("ROC AUC Score:")
-        print(roc_auc_score(y_test, y_proba))
+    def grid_search(self, X_train: pd.DataFrame, y_train: pd.Series) -> XGBClassifier:
+        """Performs grid search to find the best hyperparameters.
 
-    def grid_search(self, X_train, y_train):
+        Args:
+            X_train (pd.DataFrame): Training input features.
+            y_train (pd.Series): Target feature for the training set.
+
+        Returns:
+            XGBClassifier: The best model found by grid search.
+        """
         param_grid = {
             'n_estimators': [50, 100, 200],
             'max_depth': [3, 5, 7],
@@ -46,15 +79,34 @@ class XGBoostModel:
 
         self.model = grid.best_estimator_
         return self.model
-    
-    def explain(self, feature_names, X_train):
+
+    def explain(self, feature_names: List[str], X_train: pd.DataFrame) -> shap.Explanation:
+        """Generates and plots SHAP values for the model.
+
+        Args:
+            feature_names (List[str]): List of feature names (not used directly in SHAP but may help elsewhere).
+            X_train (pd.DataFrame): Input features used to compute SHAP values.
+
+        Returns:
+            shap.Explanation: SHAP values for the input data.
+        """
         explainer = shap.Explainer(self.model)
         shap_values = explainer(X_train)
         shap.summary_plot(shap_values, X_train, max_display=10)
         return shap_values
 
-    def save(self, filename):
+    def save(self, filename: str) -> None:
+        """Saves the model to a file using joblib.
+
+        Args:
+            filename (str): Path to save the model.
+        """
         joblib.dump(self.model, filename)
 
-    def load(self, filename):
+    def load(self, filename: str) -> None:
+        """Loads the model from a file using joblib.
+
+        Args:
+            filename (str): Path to the saved model file.
+        """
         self.model = joblib.load(filename)
