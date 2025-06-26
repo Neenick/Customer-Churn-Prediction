@@ -18,8 +18,6 @@ from src.models.logistic_regression import LogisticRegressionModel
 from src.models.random_forest import RandomForestModel
 from src.models.xgboost import XGBoostModel
 
-
-
 X_train, X_test, y_train, y_test = load_data(DATA_PATH, split=0.2)
 
 def select_model() -> Tuple[str, Union[LogisticRegressionModel, RandomForestModel, XGBoostModel], str]:
@@ -57,6 +55,11 @@ mode = st.radio("Select what you want to do:", ["Model Evaluation", "Single Pred
 # === MODEL EVALUATION ===
 if mode == "Model Evaluation":
     st.header("Model Evaluation")
+
+    # Optional: show dataset
+    if st.checkbox("Show raw dataset"):
+        st.subheader("Raw Dataset")
+        st.dataframe(pd.concat([X_train, y_train], axis=1))
 
     # 1. Select Model
     model_choice, model, model_file = select_model()
