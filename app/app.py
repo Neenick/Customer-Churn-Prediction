@@ -45,6 +45,16 @@ def select_model() -> Tuple[str, Union[LogisticRegressionModel, RandomForestMode
     model_file = MODEL_PATHS[model_choice]
     return model_choice, model, model_file
 
+def show_feature_importance(data):
+    if model_choice == "XGBoost":
+        shap_values = model.explain(TOTAL_FEATURE_LIST, data)
+        plt.figure(figsize=(10, 6))
+        shap.summary_plot(shap_values, data, max_display=10, show=False)
+        st.pyplot(plt.gcf())
+        plt.clf()
+    else:
+        importance = model.explain(TOTAL_FEATURE_LIST, data)  # make sure explain returns something, e.g., dict or list of tuples
+        st.write(importance)
 
 
 st.title("Customer Churn Prediction with Explainability")
@@ -80,7 +90,8 @@ if mode == "Model Evaluation":
             model.load(model_file)
             model.evaluate(X_test, y_test)
 
-    # Load and evaluate the model here (e.g., show accuracy, SHAP, feature importance, etc.)
+            st.subheader(f"Feature importance for {model_choice}:")
+            show_feature_importance(X_train)
 
 # === SINGLE PREDICTION ===
 elif mode == "Single Prediction":
@@ -107,23 +118,43 @@ elif mode == "Single Prediction":
 
     input_df = user_input_features()
 
-    if st.button('Predict and Explain'):
-        prediction = model.model.predict(input_df)[0]
-        prediction_proba = model.model.predict_proba(input_df)[0, 1]
-        
-        st.write(f"Model: {model_choice}")
-        st.write(f"Prediction: {'Churn' if prediction == 1 else 'No churn'}")
-        st.write(f"Churn Probability: {prediction_proba:.2f}")
-        
-        st.write(f"Feature importance for {model_choice}:")
+    # Threshold slider
+    threshold = st.slider(
+        "Set churn threshold (%)",
+        min_value=0,
+        max_value=60,
+        value=35,
+        step=1,
+        format="%.0f"
+    )
 
-        if model_choice == "XGBoost":
-            shap_values = model.explain(TOTAL_FEATURE_LIST, input_df)
-            plt.figure(figsize=(10, 6))
-            shap.summary_plot(shap_values, input_df, max_display=10, show=False)
-            st.pyplot(plt.gcf())
-            plt.clf()
+    if st.button('Predict and Explain'):
+        #prediction = model.model.predict(input_df)[0]
+        prediction_proba = model.model.predict_proba(input_df)[0, 1]
+
+        # Apply custom threshold (35%)
+        prediction = int(prediction_proba >= threshold/100)
+        
+        # Title
+        st.markdown(f"### 🔍 Prediction Result ({model_choice})")
+
+        # Prediction outcome with color
+        if prediction == 1:
+            st.error("🚨 The customer is likely to churn.")
         else:
-            importance = model.explain(TOTAL_FEATURE_LIST, input_df)  # make sure explain returns something, e.g., dict or list of tuples
-            st.write(importance)
+            st.success("✅ The customer is not likely to churn.")
+
+        # Probability
+        st.markdown(f"**Churn Probability:** `{prediction_proba:.1%}`")
+        st.caption(f"ℹ️ A customer is considered likely to churn if the probability is greater than **{threshold}%**.")
+
+        # Divider
+        st.markdown("---")
+
+        # Feature importance
+        st.markdown(f"### 📊 Feature Importance for {model_choice}")
+        show_feature_importance(input_df)
+
+
+        
 
